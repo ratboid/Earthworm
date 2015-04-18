@@ -1,7 +1,7 @@
 #ifndef ENCODER_H
 #define ENCODER_H
-#include "Arduino.h"
-
+#include <Arduino.h>
+#define CLICK_TO_DIST 1
 
 class Encoder{
 	public:
@@ -9,13 +9,13 @@ class Encoder{
 		void update();
 		void reset();
 		float getPosition();
-		float getDelta;
+		float getDelta();
 	private:
 		float pos;
 		float lastPos;
 		byte pinA;
 		byte pinB;
 		byte last;
-}
+};
 
 #endif
