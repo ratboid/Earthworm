@@ -6,8 +6,8 @@
 #include <Drive.h>
 
 
-AF_DCMotor frontLeft(1);
-AF_DCMotor frontRight(2);
+AF_DCMotor frontLeft(2);
+AF_DCMotor frontRight(1);
 AF_DCMotor rearLeft(3);
 AF_DCMotor rearRight(4);
 
@@ -33,16 +33,27 @@ void setup() {
   rightServo.attach(9);
 }
 
-void loop() {
-  for(int i = 10; i < 180; i += 10){
-    leftEye.servoWrite(i);
-    rightEye.servoWrite(i);    
-    Serial.print(i);
-    Serial.print("\tLeft\t");
-    Serial.print(leftEye.getDistance());
-    Serial.print("\tRight\t");
-    Serial.print(rightEye.getDistance());
-    Serial.println();
-    delay(1000);
+void runTest(int b){
+  long time = millis();
+  rightDrive.setPower(b);
+  while(millis() - time < 1000){
+    leftEncoder.update();
+    rightEncoder.update(); 
   }
+  rightDrive.setPower(0);
+  Serial.print(b);
+  Serial.print("\t");
+  Serial.print(leftEncoder.getPosition());
+  Serial.print("\t");
+  Serial.print(rightEncoder.getPosition());
+  Serial.println();
+}
+
+void loop() {
+  Serial.println("Power\tFront\tBack");
+  for(int i = 0; i <= 256; i+= 8){
+    runTest(i);
+    runTest(-i); 
+  }
+    
 }

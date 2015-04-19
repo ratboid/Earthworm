@@ -16,6 +16,7 @@ class Encoder{
 		byte pinA;
 		byte pinB;
 		byte last;
+		byte n;
 };
 
 #endif

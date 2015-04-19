@@ -5,7 +5,10 @@
 Encoder::Encoder(byte a, byte b){
 	this->pinA = a;
 	this->pinB = b;
-	this->last = LOW;
+	pinMode(a,INPUT);
+	pinMode(b,INPUT);
+	this->last = digitalRead(this->pinA);
+	this->n = this->last;
 	this->reset();
 }
 
@@ -15,15 +18,16 @@ void Encoder::reset(){
 }
 
 void Encoder::update(){
-	this->last = this->last & digitalRead(this->pinA);
-	if( (this->last >> 4 == LOW) && (this->last & 15 == HIGH) ){
+	this->n = digitalRead(this->pinA);
+	if( this->last == LOW && this->n == HIGH){
 		if( digitalRead(this->pinB) == LOW ){
 			this->pos += CLICK_TO_DISTANCE;
 		}else{
 			this->pos -= CLICK_TO_DISTANCE;
 		}
+		Serial.println(this->pos);
 	}
-	this->last = this->last << 4; 
+	this->last = this->n;
 }
 
 float Encoder::getPosition(){
