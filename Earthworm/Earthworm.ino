@@ -109,7 +109,7 @@ void Rosed::turnAngle(float target_theta){
   long time;
   int signal;
   turnController->reset();
-  while(abs((this->theta - target_theta)) > PI/16){
+  while(abs((this->theta - target_theta)) > PI/8){
     signal = turnController->step(this->theta,target_theta);
     Serial.print(signal);
     Serial.print("\t");
@@ -145,17 +145,45 @@ void Rosed::driveDistance(float dist){
 }
 
 Rosed earthworm(&leftDrive,&rightDrive,&leftEye,&rightEye,&turnPID);
+int dest; //distace to motor in inches
+float traveled; //distance already covered in y (directly forward) direction
 
 void setup() {
   Serial.begin(9600);
-  leftServo.attach(10);
-  rightServo.attach(9);
+  leftServo.attach(9);
+  rightServo.attach(10);
 }
 
 void loop() {
+  
   /*
   earthworm.turnAngle(-PI);
-  earthworm.driveDistance(30);*/
+  earthworm.driveDistance(30);
+  earthworm.turnAngle(45);
+  earthworm.driveDistance(30);
+  */
+  //main drive code here
+  while (traveled <= dest){
+    leftEye.servoWrite(90);
+    
+    if (leftEye.getDistance() <= 20){
+       if(rightEye.getDistance() >= 20){
+        earthworm.turnAngle(53);
+        earthworm.driveDistance(36);
+        leftEye.servoWrite(143);
+       if (leftEye.getDistance() >= 20){
+          earthworm.turnAngle(90);
+          leftEye.servoWrite(90);
+          earthworm.driveDistance(48);
+        }
+      } else {
+        earthworm.driveDistance(3);
+        traveled = traveled+3;
+        earthworm.updateState();
+      }
+    }
+  }
+  
   leftDrive.setLinearPower(255);
   delay(1000);
   leftDrive.setLinearPower(128);
@@ -163,7 +191,7 @@ void loop() {
   leftDrive.setLinearPower(64);  
   delay(1000);
   leftDrive.setLinearPower(0);
+  dest = 40;
   while(true){
-    
   }
 }
