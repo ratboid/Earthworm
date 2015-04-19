@@ -5,6 +5,8 @@
 #include <Encoder.h>
 #include <Drive.h>
 
+#define WIDTH 9.5
+
 AF_DCMotor frontLeft(2);
 AF_DCMotor frontRight(1);
 AF_DCMotor rearLeft(3);
@@ -46,12 +48,12 @@ byte linearizeFrontLeft(byte a){
   return c; 
 }
 
-Encoder leftEncoder(16,17);
-Encoder rightEncoder(18,19);
+Encoder leftEncoder(18,19);
+Encoder rightEncoder(16,17);
 
-PID leftPID(0.0,0.0,0.0);
-PID rightPID(0.0,0.0,0.0);
-PID turnPID(0.0,0.0,0.0);
+PID leftPID(11.5,0.0,0.0);
+PID rightPID(11.5,0.0,0.0);
+PID turnPID(192.0,0.0,0.0);
 
 Drive leftDrive(&frontLeft, &rearLeft, &leftEncoder, &leftPID, linearizeRearLeft, linearizeFrontLeft);
 Drive rightDrive(&frontRight, &rearRight, &rightEncoder, &rightPID, linearizeRearRight, linearizeFrontRight);
@@ -62,35 +64,106 @@ Servo rightServo;
 EyeStalk leftEye(14, &leftServo);
 EyeStalk rightEye(15, &rightServo);
 
+class Rosed{
+  public:
+    Rosed(Drive *, Drive *, EyeStalk *, EyeStalk *, PID *);
+    void driveDistance(float);
+    void turnAngle(float);
+    void updateState();
+  private:
+    Drive * leftDrive;
+    Drive * rightDrive;
+    EyeStalk * leftEye;
+    EyeStalk * rightEye;
+    PID * turnController;
+    float x,y,theta;
+};
+
+Rosed::Rosed(Drive * ld, Drive * rd, EyeStalk * le, EyeStalk * re, PID * tc){
+  this->leftDrive = ld;
+  this->rightDrive = rd;
+  this->leftEye = le;
+  this->rightEye = re;
+  this->turnController = tc;
+}
+
+void Rosed::updateState(){
+  float left_del = leftDrive->encoder->getDelta();
+  float right_del = rightDrive->encoder->getDelta();
+  
+  float theta_del = (left_del - right_del) / WIDTH;
+  this->theta += theta_del;
+  
+  this->x += (left_del + right_del) * cos(theta);
+  this->y += (left_del + right_del) * sin(theta);
+
+  Serial.print(this->theta);
+  Serial.print("\t");
+  Serial.print(this->x);
+  Serial.print("\t");
+  Serial.print(this->y);
+  Serial.println("\t");
+}
+
+void Rosed::turnAngle(float target_theta){
+  long time;
+  int signal;
+  turnController->reset();
+  while(abs((this->theta - target_theta)) > PI/16){
+    signal = turnController->step(this->theta,target_theta);
+    Serial.print(signal);
+    Serial.print("\t");
+    leftDrive->setLinearPower(-signal);
+    rightDrive->setLinearPower(signal);
+    time = millis();
+    while(millis()-time < 50){
+      rightDrive->encoder->update();
+      leftDrive->encoder->update();
+    }
+    this->updateState();
+  }
+  leftDrive->setPower(0);
+  rightDrive->setPower(0);
+}
+
+void Rosed::driveDistance(float dist){
+  leftDrive->setGoal(dist);
+  rightDrive->setGoal(dist);
+  long time;
+  while(abs(leftDrive->getError()) > 1 || abs(rightDrive->getError())>1){
+    rightDrive->step();
+    leftDrive->step();
+    time = millis();
+    while(millis()-time < 50){
+      rightDrive->encoder->update();
+      leftDrive->encoder->update();
+    }
+    this->updateState();
+  }
+  leftDrive->setPower(0);
+  rightDrive->setPower(0);
+}
+
+Rosed earthworm(&leftDrive,&rightDrive,&leftEye,&rightEye,&turnPID);
+
 void setup() {
   Serial.begin(9600);
   leftServo.attach(10);
   rightServo.attach(9);
 }
 
-void runTest(int b){
-  rightEncoder.reset();
-  leftEncoder.reset();
-  long time = millis();
-  Serial.print(b);
-  Serial.print("\t");
-  leftDrive.setLinearPower(b);
-  while(millis() - time < 1000){
-    leftEncoder.update();
-    rightEncoder.update(); 
-  }
-  leftDrive.setPower(0);
-  delay(1000);
-  Serial.print(leftEncoder.getPosition());
-  Serial.print("\t");
-  Serial.print(rightEncoder.getPosition());
-  Serial.println();
-}
-
 void loop() {
-  Serial.println("Power\tFront\tBack");
-  for(int i = -256; i <= 256; i+= 8){
-    runTest(i);
-  }
+  /*
+  earthworm.turnAngle(-PI);
+  earthworm.driveDistance(30);*/
+  leftDrive.setLinearPower(255);
+  delay(1000);
+  leftDrive.setLinearPower(128);
+  delay(1000);
+  leftDrive.setLinearPower(64);  
+  delay(1000);
+  leftDrive.setLinearPower(0);
+  while(true){
     
+  }
 }

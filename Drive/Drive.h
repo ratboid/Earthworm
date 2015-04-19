@@ -12,13 +12,17 @@ class Drive{
 		void setPower(int);
 		void setLinearPower(int);
 		void reset();
+		void setGoal(float g);
+		void step();
+		float getError();
+		Encoder * encoder;
 	private:
 		AF_DCMotor * front;
 		AF_DCMotor * rear;
 		PID * controller;
 		byte (*linearizeFront)(byte);
 		byte (*linearizeRear)(byte);
-		Encoder * encoder;
+		float goal;
 };
 
 #endif

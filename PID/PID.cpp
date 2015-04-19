@@ -10,10 +10,10 @@ PID::PID(float kP, float kI, float kD){
 	this->reset();
 }
 
-byte PID::step(float curr, float goal){
+int PID::step(float curr, float goal){
 	float error = goal - curr;
 	this->sumError += error;
-	byte signal = (byte) (this->kP * error) + (this->kI * sumError) + (this->kD * (error - this->lastError) * dt);
+	int signal = (int) (this->kP * error) + (this->kI * sumError) + (this->kD * (error - this->lastError) * dt);
 	this->lastError = error;
 	return signal;
 }

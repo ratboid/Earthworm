@@ -5,7 +5,7 @@
 class PID{
 	public:
 		PID(float, float, float);
-		byte step(float, float);
+		int step(float, float);
 		void reset();
 	private:
 		float kP, kI, kD;

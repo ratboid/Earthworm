@@ -1,7 +1,7 @@
 #ifndef ENCODER_H
 #define ENCODER_H
 #include <Arduino.h>
-#define CLICK_TO_DISTANCE 1
+#define CLICK_TO_DISTANCE 11.5/32
 
 class Encoder{
 	public:

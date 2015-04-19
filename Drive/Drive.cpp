@@ -19,16 +19,16 @@ Drive::Drive(AF_DCMotor *f, AF_DCMotor * r, Encoder * e, PID * p, byte (*a)(byte
 }
 
 void Drive::setLinearPower(int signal){
-	byte fSignal = (byte)abs(signal);
-	byte rSignal = (byte)abs(signal);
+	byte fSignal = (byte)min(abs(signal),255);
+	byte rSignal = (byte)min(abs(signal),255);
 	if(this->linearizeFront && this->linearizeRear){
 		fSignal = this->linearizeFront(fSignal);
 		rSignal = this->linearizeRear(rSignal);
 	}
 	this->front->run((signal > 0)? FORWARD : BACKWARD);
 	this->rear->run((signal > 0)? FORWARD : BACKWARD);
-	this->front->setSpeed(min(fSignal,255));
-	this->rear->setSpeed(min(rSignal,255));
+	this->front->setSpeed(fSignal);
+	this->rear->setSpeed(rSignal);
 }
 
 void Drive::setPower(int signal){
@@ -46,6 +46,23 @@ void Drive::reset(){
 	this->front->setSpeed(0);
 	this->rear->setSpeed(0);
 	this->encoder->reset();
+	this->controller->reset();
+	this->goal = 0;
+}
+
+void Drive::step(){
+	float curr = this->encoder->getPosition();
+	int signal = this->controller->step(curr,this->goal);
+	this->setLinearPower(signal);
+}
+
+float Drive::getError(){
+	return this->goal - this->encoder->getPosition();
+}
+
+void Drive::setGoal(float g){
+	this->reset();
+	this->goal = g;
 }
 
 #endif
