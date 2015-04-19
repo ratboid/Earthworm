@@ -2,16 +2,18 @@
 #define DRIVE_CPP
 #include "Drive.h"
 
-Drive::Drive(AF_DCMotor *f, AF_DCMotor * r, Encoder * e){
+Drive::Drive(AF_DCMotor *f, AF_DCMotor * r, Encoder * e, PID * p){
 	this->front = f;
 	this->rear = r;
 	this->encoder = e;
+	this->controller = p;
 }
 
-Drive::Drive(AF_DCMotor *f, AF_DCMotor * r, Encoder * e, byte (*a)(byte), byte (*b)(byte)){
+Drive::Drive(AF_DCMotor *f, AF_DCMotor * r, Encoder * e, PID * p, byte (*a)(byte), byte (*b)(byte)){
 	this->front = f;
 	this->rear = r;
 	this->encoder = e;
+	this->controller = p;
 	this->linearizeFront = a;
 	this->linearizeRear = b;
 }
