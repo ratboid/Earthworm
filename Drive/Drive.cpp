@@ -25,19 +25,19 @@ void Drive::setLinearPower(int signal){
 		fSignal = this->linearizeFront(fSignal);
 		rSignal = this->linearizeRear(rSignal);
 	}
-	this->front->run((signal < 0)? FORWARD : BACKWARD);
-	this->rear->run((signal < 0)? FORWARD : BACKWARD);
-	this->front->setSpeed(fSignal);
-	this->rear->setSpeed(rSignal);
+	this->front->run((signal > 0)? FORWARD : BACKWARD);
+	this->rear->run((signal > 0)? FORWARD : BACKWARD);
+	this->front->setSpeed(min(fSignal,255));
+	this->rear->setSpeed(min(rSignal,255));
 }
 
 void Drive::setPower(int signal){
 	byte fSignal = (byte)abs(signal);
 	byte rSignal = (byte)abs(signal);
-	this->front->run((signal < 0)? FORWARD : BACKWARD);
-	this->rear->run((signal < 0)? FORWARD : BACKWARD);
-	this->front->setSpeed(fSignal);
-	this->rear->setSpeed(rSignal);
+	this->front->run((signal > 0)? FORWARD : BACKWARD);
+	this->rear->run((signal > 0)? FORWARD : BACKWARD);
+	this->front->setSpeed(min(fSignal,255));
+	this->rear->setSpeed(min(rSignal,255));
 }
 
 void Drive::reset(){

@@ -24,8 +24,7 @@ void Encoder::update(){
 			this->pos += CLICK_TO_DISTANCE;
 		}else{
 			this->pos -= CLICK_TO_DISTANCE;
-		}
-		Serial.println(this->pos);
+		};
 	}
 	this->last = this->n;
 }
